@@ -10,15 +10,16 @@ import javax.persistence.*;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "books")
+@Table(name = "dictionary")
 @Getter
 @Setter
-public class Book {
+public class Dictionary {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String text;
+    private String word;
+    private String pos;
+    private String definition;
 }
