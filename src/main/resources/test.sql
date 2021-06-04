@@ -33,9 +33,23 @@ SELECT ts_headline('english', '', to_tsquery('head'));
 
 SELECT ts_headline('english',
                    definition,
-                   to_tsquery('english', 'query & similarity'),
-                   'MaxFragments=0, MinWords=5, MaxWords=9')
+                   to_tsquery('english', 'Blunder'), 'MaxFragments=10, StartSel=<<, StopSel=>>' )
 FROM dictionary
-WHERE to_tsvector(definition) @@ plainto_tsquery('ascendance')
-ORDER BY ts_rank(to_tsvector(definition), plainto_tsquery('ascendance'));
+WHERE to_tsvector(definition) @@ plainto_tsquery('Blunder')
+ORDER BY ts_rank(to_tsvector(definition), plainto_tsquery('Blunder'));
 INSERT INTO dictionary(word, pos, definition) VALUES ('Absolute Radiance', 'A.', 'Ascended god of the past. Ascended radiance');
+INSERT INTO dictionary(word, pos, definition) VALUES ('My blunder', 'A.', 'Blunder of. Blunder of, Blunder of/ Blunder of');
+
+-- Создаем отдельную колонку, чтобы можно создать по ней индекс
+ALTER table dictionary
+    ADD vector tsvector;
+CREATE SEQUENCE dictionary_id_seq
+    AS INTEGER;
+ALTER SEQUENCE dictionary_id_seq OWNER TO postgres;
+
+ALTER SEQUENCE dictionary_id_seq OWNED BY dictionary.vector;
+
+-- Апдейтим в нее наш вектор
+UPDATE dictionary SET vector = to_tsvector(dictionary.definition);
+
+CREATE INDEX weighted_tsv_idx ON dictionary USING GIST (vector);
